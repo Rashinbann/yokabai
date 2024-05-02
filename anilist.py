@@ -26,17 +26,25 @@ async def manga(ctx, *name):
     embed.set_footer(text=anime_dict['genres'])
     embed.set_thumbnail(url=anime_dict['cover_image'])
 
-    # TO DO make it so that it doesn't actually print chapters/volumes if that info doesn't exist.
-    # Right now it just gives None
-    info = f"Chapters: {anime_dict['chapters']} \nVolumes: {anime_dict['volumes']}"
+    chapters = anime_dict['chapters']
+    volumes = anime_dict['volumes']
+
+    if chapters is None and volumes is None:
+        info = "Info unavailable"
+    else:
+        if chapters:
+            info += f"Chapters: {chapters}"
+        if volumes:
+            if chapters:
+                info += "\n"
+            info += f"Volumes: {volumes}"
+
+    desc = textwrap.shorten(anime_dict['desc'], width=1024, placeholder="...")
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(2,name="Info", value=info, inline=True)
     print(anime_dict)
-    lenght = len(anime_dict['desc'])
-    if lenght < 1024:
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send('Desc is too long')
+
+    await ctx.send(embed=embed)
 
 @commands.command(
     brief="Search Anilist for a manga and post it's info in the chat"
@@ -55,6 +63,23 @@ async def anime(ctx, *name):
     # TO DO make it so that it doesn't actually print chapters/volumes if that info doesn't exist.
     # Right now it just gives None
     info = f"Episoodes: {anime_dict['airing_episodes']} \nSeason: {anime_dict['season']}"
+
+
+
+    episodes = anime_dict['airing_episodes']
+    season = anime_dict['season']
+
+    if episodes is None and season is None:
+        info = "Info unavailable"
+    else:
+        if episodes:
+            info += f"Episodes: {episodes}"
+        if season:
+            if episodes:
+                info += "\n"
+            info += f"Season: {season}"
+
+
     embed.insert_field_at(0,name="Synopsis", value=anime_dict['desc'], inline=True)
     embed.insert_field_at(2,name="Info", value=info, inline=True)
     print(anime_dict)
