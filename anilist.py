@@ -63,9 +63,6 @@ async def anime(ctx, *name):
     # TO DO make it so that it doesn't actually print chapters/volumes if that info doesn't exist.
     # Right now it just gives None
     info = f"Episoodes: {anime_dict['airing_episodes']} \nSeason: {anime_dict['season']}"
-
-
-
     episodes = anime_dict['airing_episodes']
     season = anime_dict['season']
 
