@@ -2,6 +2,7 @@ import requests
 import discord
 from discord.ext import commands
 from AnilistPython import Anilist
+import textwrap
 
 anilist = Anilist()
 
@@ -28,7 +29,7 @@ async def manga(ctx, *name):
 
     chapters = anime_dict['chapters']
     volumes = anime_dict['volumes']
-
+    info = ""
     if chapters is None and volumes is None:
         info = "Info unavailable"
     else:
@@ -66,6 +67,7 @@ async def anime(ctx, *name):
     episodes = anime_dict['airing_episodes']
     season = anime_dict['season']
 
+    info = ""
     if episodes is None and season is None:
         info = "Info unavailable"
     else:
@@ -75,7 +77,6 @@ async def anime(ctx, *name):
             if episodes:
                 info += "\n"
             info += f"Season: {season}"
-
 
     embed.insert_field_at(0,name="Synopsis", value=anime_dict['desc'], inline=True)
     embed.insert_field_at(2,name="Info", value=info, inline=True)
