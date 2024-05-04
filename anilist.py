@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from AnilistPython import Anilist
 import textwrap
+import re
 
 anilist = Anilist()
 
@@ -39,8 +40,11 @@ async def manga(ctx, *name):
             if chapters:
                 info += "\n"
             info += f"Volumes: {volumes}"
-
-    desc = textwrap.shorten(anime_dict['desc'], width=1024, placeholder="...")
+    descdict = anime_dict['desc']
+    replace_descdict = {"<br>": "\n", "<i>": "*", "</i>": "*"}
+    for old, new in replace_descdict.items():
+        descdict = descdict.replace(old, new)
+    desc = textwrap.shorten(descdict, width=1024, placeholder="...")
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(2,name="Info", value=info, inline=True)
     print(anime_dict)
@@ -53,7 +57,7 @@ async def manga(ctx, *name):
 async def anime(ctx, *name):
     name = ctx.message.content.removeprefix(".anime ")
     anime_dict = anilist.get_anime(name)
-    val = anime_dict.values()
+    desc = anime_dict['desc']
     embed = discord.Embed(
         colour=discord.Colour.dark_red(),
         title=anime_dict['name_romaji'],
@@ -65,7 +69,7 @@ async def anime(ctx, *name):
     # Right now it just gives None
     info = f"Episoodes: {anime_dict['airing_episodes']} \nSeason: {anime_dict['season']}"
     episodes = anime_dict['airing_episodes']
-    season = anime_dict['season']
+    season = anime_dict['season'].lower()
 
     info = ""
     if episodes is None and season is None:
@@ -77,8 +81,12 @@ async def anime(ctx, *name):
             if episodes:
                 info += "\n"
             info += f"Season: {season}"
-
-    embed.insert_field_at(0,name="Synopsis", value=anime_dict['desc'], inline=True)
+    descdict = anime_dict['desc']
+    replace_descdict = {"<br>": "\n", "<i>": "*", "</i>": "*"}
+    for old, new in replace_descdict.items():
+        descdict = descdict.replace(old, new)
+    desc = textwrap.shorten(descdict, width=1024, placeholder="...")
+    embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(2,name="Info", value=info, inline=True)
     print(anime_dict)
     await ctx.send(embed=embed)

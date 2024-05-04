@@ -22,7 +22,7 @@ async def add(ctx, days : int):
         cursor.execute("SELECT streak FROM mytable WHERE user = ?", (author,))
 
 
-        existing_streak = cursor.fetchone() 
+        existing_streak = cursor.fetchone()
 
         if existing_streak is None:
             cursor.execute("INSERT INTO mytable(user, streak) VALUES(?, ?)", (author, number))
