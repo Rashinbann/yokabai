@@ -27,7 +27,7 @@ async def manga(ctx, *name):
         )
     embed.set_footer(text=anime_dict['genres'])
     embed.set_thumbnail(url=anime_dict['cover_image'])
-
+    embed.set_image(url=anime_dict["banner_image"])
     chapters = anime_dict['chapters']
     volumes = anime_dict['volumes']
     info = ""
@@ -46,7 +46,7 @@ async def manga(ctx, *name):
         descdict = descdict.replace(old, new)
     desc = textwrap.shorten(descdict, width=1024, placeholder="...")
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(2,name="Info", value=info, inline=True)
+    embed.insert_field_at(0,name="Info", value=info, inline=True)
     print(anime_dict)
 
     await ctx.send(embed=embed)
@@ -65,6 +65,7 @@ async def anime(ctx, *name):
         )
     embed.set_footer(text=anime_dict['genres'])
     embed.set_thumbnail(url=anime_dict['cover_image'])
+    embed.set_image(url=anime_dict['banner_image'])
     # TO DO make it so that it doesn't actually print chapters/volumes if that info doesn't exist.
     # Right now it just gives None
     info = f"Episoodes: {anime_dict['airing_episodes']} \nSeason: {anime_dict['season']}"
@@ -86,8 +87,8 @@ async def anime(ctx, *name):
     for old, new in replace_descdict.items():
         descdict = descdict.replace(old, new)
     desc = textwrap.shorten(descdict, width=1024, placeholder="...")
-    embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(2,name="Info", value=info, inline=True)
+    embed.insert_field_at(1,name="Synopsis", value=desc, inline=True)
+    embed.insert_field_at(0,name="Info", value=info, inline=True)
     print(anime_dict)
     await ctx.send(embed=embed)
 
