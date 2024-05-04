@@ -21,7 +21,7 @@ async def manga(ctx, *name):
     anime_dict = anilist.get_manga(name)
     desc = anime_dict['desc']
     embed = discord.Embed(
-        colour=discord.Colour.dark_red(),
+        colour=discord.Colour.light_blue(),
         title=anime_dict['name_romaji'],
         description=anime_dict['name_english']
         )
@@ -70,7 +70,7 @@ async def anime(ctx, *name):
     # Right now it just gives None
     info = f"Episoodes: {anime_dict['airing_episodes']} \nSeason: {anime_dict['season']}"
     episodes = anime_dict['airing_episodes']
-    season = anime_dict['season'].lower()
+    season = anime_dict['season'].capitalize()
 
     info = ""
     if episodes is None and season is None:
