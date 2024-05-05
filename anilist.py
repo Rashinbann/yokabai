@@ -16,15 +16,21 @@ def ellipcise(text):
 markdown_map = [{'tag': ['<i>', '</i>'], 'markdown': '*'}]
 def convert_to_markdown(text, replace_map):
     for replacement in replace_map:
-        t = type(replacement['tag'])
-        if t == 'list':
-                for tag in replacement['tag']:
-                    text.replace(tag, replacement['markdown'])
-        elif t == 'str':
-                text.replace(replacement['tag'], replacement['markdown'])
+        tag = replacement['tag']  # Extract tag from the replacement dictionary
+        markdown = replacement['markdown']
+
+        if isinstance(tag, list):
+            for t in tag:
+                text = text.replace(t, markdown)  # Apply markdown replacement
+        elif isinstance(tag, str):
+            text = text.replace(tag, markdown)  # Apply markdown replacement
         else:
-                raise TypeError("tag must be of type 'list' or 'str', was {t}")
+            raise TypeError(f"tag must be of type 'list' or 'str', was {type(tag)}")
+
     return text
+
+
+
 
 def markdownify(text):
     return convert_to_markdown(text, markdown_map)
@@ -43,7 +49,7 @@ async def manga(ctx, *name):
     anime_dict = anilist.get_manga(name)
     desc = anime_dict['desc']
     embed = discord.Embed(
-        colour=discord.Colour.light_blue(),
+        colour=discord.Colour.blue(),
         title=anime_dict['name_romaji'],
         description=anime_dict['name_english']
         )
