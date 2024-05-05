@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import requests
 import discord
 from discord.ext import commands
@@ -8,21 +10,20 @@ import re
 anilist = Anilist()
 
 def ellipcise(text):
-    return textwrap.shorten(descdict, width=1024, placeholder="...")
+    return textwrap.shorten(text, width=1024, placeholder="...")
 
 
-markdown_map = [{tags: ['<i>', '</i>'], markdown: '*'}]
+markdown_map = [{'tag': ['<i>', '</i>'], 'markdown': '*'}]
 def convert_to_markdown(text, replace_map):
     for replacement in replace_map:
-        #? https://stackoverflow.com/questions/70949308/how-to-access-the-matched-value-in-the-default-case-of-structural-pattern-matchi
-        match type(replacement):
-            case list:
-                for tag in replacement['tags']:
+        t = type(replacement['tag'])
+        if t == 'list':
+                for tag in replacement['tag']:
                     text.replace(tag, replacement['markdown'])
-            case str:
+        elif t == 'str':
                 text.replace(replacement['tag'], replacement['markdown'])
-            case _ as bad_type:
-                raise TypeError("tags must be of type 'list' or 'str', was {bad_type}")
+        else:
+                raise TypeError("tag must be of type 'list' or 'str', was {t}")
     return text
 
 def markdownify(text):
