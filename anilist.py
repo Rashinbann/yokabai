@@ -7,6 +7,27 @@ import re
 
 anilist = Anilist()
 
+def ellipcise(text):
+    return textwrap.shorten(descdict, width=1024, placeholder="...")
+
+
+markdown_map = [{tags: ['<i>', '</i>'], markdown: '*'}]
+def convert_to_markdown(text, replace_map):
+    for replacement in replace_map:
+        #? https://stackoverflow.com/questions/70949308/how-to-access-the-matched-value-in-the-default-case-of-structural-pattern-matchi
+        match type(replacement):
+            case list:
+                for tag in replacement['tags']:
+                    text.replace(tag, replacement['markdown'])
+            case str:
+                text.replace(replacement['tag'], replacement['markdown'])
+            case _ as bad_type:
+                raise TypeError("tags must be of type 'list' or 'str', was {bad_type}")
+    return text
+
+def markdownify(text):
+    return convert_to_markdown(text, markdown_map)
+
 @commands.command()
 async def fox(ctx):
     responsefox = requests.get("https://randomfox.ca/floof")
@@ -40,11 +61,7 @@ async def manga(ctx, *name):
         case (chapters, volumes):
             info = f"Chapters: {chapters}\nVolumes: {volumes}"
 
-    descdict = anime_dict['desc']
-    replace_descdict = {"<br>": "\n", "<i>": "*", "</i>": "*"}
-    for old, new in replace_descdict.items():
-        descdict = descdict.replace(old, new)
-    desc = textwrap.shorten(descdict, width=1024, placeholder="...")
+    desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(0,name="Info", value=info, inline=True)
     print(anime_dict)
@@ -70,7 +87,6 @@ async def anime(ctx, *name):
     episodes = anime_dict['airing_episodes']
     season = anime_dict['season'].capitalize()
 
-    info = ""
     match (episodes, season):
         case (None, None):
             info = "Info unavailable"
@@ -81,14 +97,9 @@ async def anime(ctx, *name):
         case (episodes, season):
             info = f"Episodes: {episodes}\nSeason: {season}"
 
-    descdict = anime_dict['desc']
-    replace_descdict = {"<br>": "\n", "<i>": "*", "</i>": "*"}
-    for old, new in replace_descdict.items():
-        descdict = descdict.replace(old, new)
-    desc = textwrap.shorten(descdict, width=1024, placeholder="...")
+    desc = ellipcise(markdownify(desc))
     embed.insert_field_at(1,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(0,name="Info", value=info, inline=True)
-    print(anime_dict)
     await ctx.send(embed=embed)
 
 async def setup(bot):
