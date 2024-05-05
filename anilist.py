@@ -13,7 +13,12 @@ def ellipcise(text):
     return textwrap.shorten(text, width=1024, placeholder="...")
 
 
-markdown_map = [{'tag': ['<i>', '</i>'], 'markdown': '*'}]
+markdown_map = [
+    {'tag': ['<i>', '</i>'], 'markdown': '*'},
+    {'tag': ['<b>', '</b>'], 'markdown': '**'},
+    {'tag': '<br>', 'markdown': '\n\n'}
+
+]
 def convert_to_markdown(text, replace_map):
     for replacement in replace_map:
         tag = replacement['tag']  # Extract tag from the replacement dictionary
@@ -21,16 +26,13 @@ def convert_to_markdown(text, replace_map):
 
         if isinstance(tag, list):
             for t in tag:
-                text = text.replace(t, markdown)  # Apply markdown replacement
+                text = text.replace(t, markdown)
         elif isinstance(tag, str):
-            text = text.replace(tag, markdown)  # Apply markdown replacement
+            text = text.replace(tag, markdown)
         else:
             raise TypeError(f"tag must be of type 'list' or 'str', was {type(tag)}")
 
     return text
-
-
-
 
 def markdownify(text):
     return convert_to_markdown(text, markdown_map)
