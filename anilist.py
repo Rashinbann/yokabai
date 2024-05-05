@@ -21,12 +21,12 @@ markdown_map = [
 
 def convert_to_markdown(text, replace_map):
     for replacement in replace_map:
-        tag = replacement['tag'] 
+        tag = replacement['tag']
         markdown = replacement['markdown']
 
         if isinstance(tag, list):
             for t in tag:
-                text = text.replace(t, markdown) 
+                text = text.replace(t, markdown)
         elif isinstance(tag, str):
             text = text.replace(tag, markdown)
         else:
@@ -72,7 +72,7 @@ async def manga(ctx, *name):
 
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(0,name="Info", value=info, inline=True)
+    embed.insert_field_at(1,name="Info", value=info, inline=True)
     print(anime_dict)
 
     await ctx.send(embed=embed)
@@ -85,7 +85,7 @@ async def anime(ctx, *name):
     anime_dict = anilist.get_anime(name)
     desc = anime_dict['desc']
     embed = discord.Embed(
-        colour=discord.Colour.dark_red(),
+        colour=discord.Colour.dark_blue(),
         title=anime_dict['name_romaji'],
         description=anime_dict['name_english']
         )
@@ -107,8 +107,8 @@ async def anime(ctx, *name):
             info = f"Episodes: {episodes}\nSeason: {season}"
 
     desc = ellipcise(markdownify(desc))
-    embed.insert_field_at(1,name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(0,name="Info", value=info, inline=True)
+    embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
+    embed.insert_field_at(1,name="Info", value=info, inline=True)
     await ctx.send(embed=embed)
 
 async def setup(bot):
