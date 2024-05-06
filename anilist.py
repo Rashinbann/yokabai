@@ -47,18 +47,18 @@ async def fox(ctx):
     brief="Search Anilist for a manga and post it's info in the chat"
 )
 
-async def parse_manga(data):
-    desc = anime_dict['desc']
+async def parse_manga(data, ctx):
+    desc = data['desc']
     embed = discord.Embed(
         colour=discord.Colour.blue(),
-        title=anime_dict['name_romaji'],
-        description=anime_dict['name_english']
+        title=data['name_romaji'],
+        description=data['name_english']
         )
-    embed.set_footer(text=anime_dict['genres'])
-    embed.set_thumbnail(url=anime_dict['cover_image'])
-    embed.set_image(url=anime_dict["banner_image"])
-    chapters = anime_dict['chapters']
-    volumes = anime_dict['volumes']
+    embed.set_footer(text=data['genres'])
+    embed.set_thumbnail(url=data['cover_image'])
+    embed.set_image(url=data["banner_image"])
+    chapters = data['chapters']
+    volumes = data['volumes']
     match (chapters, volumes):
         case (None, None):
             info = "Info unavailable"
@@ -75,6 +75,7 @@ async def parse_manga(data):
 
     await ctx.send(embed=embed)
 
+@commands.command()
 async def manga(ctx, *name):
     name = ctx.message.content.removeprefix(".manga ")
     try:
@@ -82,26 +83,24 @@ async def manga(ctx, *name):
     except IndexError:
         await ctx.send("Manga is not found, try a different name.")
     else:
-        parse_manga(anime_dict)
+        await parse_manga(anime_dict, ctx)
 
-@commands.command(
-    brief="Search Anilist for a manga and post it's info in the chat"
-)
-async def anime(ctx, *name):
+
+async def parse_anime(data, ctx):
     name = ctx.message.content.removeprefix(".anime ")
-    anime_dict = anilist.get_anime(name)
-    desc = anime_dict['desc']
+    data = anilist.get_anime(name)
+    desc = data['desc']
     embed = discord.Embed(
         colour=discord.Colour.dark_blue(),
-        title=anime_dict['name_romaji'],
-        description=anime_dict['name_english']
+        title=data['name_romaji'],
+        description=data['name_english']
         )
-    embed.set_footer(text=anime_dict['genres'])
-    embed.set_thumbnail(url=anime_dict['cover_image'])
-    embed.set_image(url=anime_dict['banner_image'])
+    embed.set_footer(text=data['genres'])
+    embed.set_thumbnail(url=data['cover_image'])
+    embed.set_image(url=data['banner_image'])
 
-    episodes = anime_dict['airing_episodes']
-    season = anime_dict['season'].capitalize()
+    episodes = data['airing_episodes']
+    season = data['season'].capitalize()
 
     match (episodes, season):
         case (None, None):
@@ -117,6 +116,19 @@ async def anime(ctx, *name):
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(1,name="Info", value=info, inline=True)
     await ctx.send(embed=embed)
+
+@commands.command(
+    brief="Search Anilist for a manga and post its info in the chat"
+)
+async def anime(ctx, *name):
+    name = ctx.message.content.removeprefix(".anime ")
+    try:
+        anime_dict = anilist.get_anime(name)
+    except IndexError:
+        await ctx.send("Anime is not found, try a different name.")
+    else:
+        await parse_anime(anime_dict, ctx)
+
 
 async def setup(bot):
    bot.add_command(fox)
