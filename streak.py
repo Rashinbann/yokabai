@@ -16,7 +16,7 @@ async def streak(ctx):
     description="This will also update your streak to the number that you set it to, if you already have one."
 )
 async def add(ctx, days : int):
-    author = ctx.author.name
+    authorMember = ctx.author
     number = ctx.message.content.removeprefix(".streak add ")
     try:
         cursor.execute("SELECT streak FROM mytable WHERE user = ?", (author,))
@@ -41,22 +41,23 @@ async def add(ctx, days : int):
     brief="Increments your current streak by 1"
 )
 async def done(ctx):
-    author = ctx.author.name
+    authorMember = ctx.author
+    identifier = authorMember.id()
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
     try:
         # Check if the user exists in the database
-        cursor.execute("SELECT streak FROM mytable WHERE user = ?", (author,))
+        cursor.execute("SELECT streak FROM mytable WHERE user = ?", (id,))
 
 
-        existing_streak = cursor.fetchone() 
+        existing_streak = cursor.fetchone()
 
         if existing_streak is None:
             # If the user doesn't exist
             await ctx.send("To add a streak do `.streak add [your streak]`")
         else:
             # If the user exists
-            cursor.execute("UPDATE mytable SET streak = streak + 1 WHERE user = ?", (author,))
+            cursor.execute("UPDATE mytable SET streak = streak + 1 WHERE user = ?", (id,))
             await ctx.send("You done it")
 
     finally:
@@ -69,7 +70,7 @@ async def done(ctx):
     brief="See all the streaks in the database"
 )
 async def see(ctx):
-    author = ctx.author.name
+    authorMember = ctx.author
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
     cursor.execute("SELECT user, streak FROM mytable")
@@ -94,10 +95,11 @@ async def see(ctx):
     brief="See your current streak"
 )
 async def seeme(ctx):
-    author = ctx.author.name
+    authorMember = ctx.author
+    identifier =  authorMember.id()
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
-    cursor.execute("SELECT streak FROM mytable WHERE user =?", (author,))
+    cursor.execute("SELECT streak FROM mytable WHERE user =?", (id,))
     data = cursor.fetchone()
     datastr = str(data[0])
 
