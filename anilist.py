@@ -46,6 +46,35 @@ async def fox(ctx):
 @commands.command(
     brief="Search Anilist for a manga and post it's info in the chat"
 )
+
+async def parse_manga(data):
+    desc = anime_dict['desc']
+    embed = discord.Embed(
+        colour=discord.Colour.blue(),
+        title=anime_dict['name_romaji'],
+        description=anime_dict['name_english']
+        )
+    embed.set_footer(text=anime_dict['genres'])
+    embed.set_thumbnail(url=anime_dict['cover_image'])
+    embed.set_image(url=anime_dict["banner_image"])
+    chapters = anime_dict['chapters']
+    volumes = anime_dict['volumes']
+    match (chapters, volumes):
+        case (None, None):
+            info = "Info unavailable"
+        case (chapters, None):
+            info = f"Chapters: {chapters}"
+        case (None, volumes):
+            info = f"Volumes: {volumes}"
+        case (chapters, volumes):
+            info = f"Chapters: {chapters}\nVolumes: {volumes}"
+
+    desc = ellipcise(markdownify(desc))
+    embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
+    embed.insert_field_at(1,name="Info", value=info, inline=True)
+
+    await ctx.send(embed=embed)
+
 async def manga(ctx, *name):
     name = ctx.message.content.removeprefix(".manga ")
     try:
@@ -53,33 +82,7 @@ async def manga(ctx, *name):
     except IndexError:
         await ctx.send("Manga is not found, try a different name.")
     else:
-        desc = anime_dict['desc']
-        embed = discord.Embed(
-            colour=discord.Colour.blue(),
-            title=anime_dict['name_romaji'],
-            description=anime_dict['name_english']
-            )
-        embed.set_footer(text=anime_dict['genres'])
-        embed.set_thumbnail(url=anime_dict['cover_image'])
-        embed.set_image(url=anime_dict["banner_image"])
-        chapters = anime_dict['chapters']
-        volumes = anime_dict['volumes']
-        match (chapters, volumes):
-            case (None, None):
-                info = "Info unavailable"
-            case (chapters, None):
-                info = f"Chapters: {chapters}"
-            case (None, volumes):
-                info = f"Volumes: {volumes}"
-            case (chapters, volumes):
-                info = f"Chapters: {chapters}\nVolumes: {volumes}"
-
-        desc = ellipcise(markdownify(desc))
-        embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
-        embed.insert_field_at(1,name="Info", value=info, inline=True)
-        print(anime_dict)
-
-        await ctx.send(embed=embed)
+        parse_manga(anime_dict)
 
 @commands.command(
     brief="Search Anilist for a manga and post it's info in the chat"
