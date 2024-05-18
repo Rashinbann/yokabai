@@ -1,9 +1,15 @@
 from discord.ext import commands
 import sqlite3
 import discord
-
 db = sqlite3.connect('streakdb.db')
 cursor = db.cursor()
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='.', intents=intents)
+
+async def user_from_id(ctx, id):
+    user = await ctx.message.guild.query_members(user_ids=[id]) # list of members with userid
+    return user[0] # there should be only one so get the first item in the list
+
 
 @commands.group(invoke_without_commmand=True)
 async def streak(ctx):
@@ -17,18 +23,19 @@ async def streak(ctx):
 )
 async def add(ctx, days : int):
     authorMember = ctx.author
+    identifier = authorMember.id
     number = ctx.message.content.removeprefix(".streak add ")
     try:
-        cursor.execute("SELECT streak FROM mytable WHERE user = ?", (author,))
+        cursor.execute("SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
 
 
         existing_streak = cursor.fetchone()
 
         if existing_streak is None:
-            cursor.execute("INSERT INTO mytable(user, streak) VALUES(?, ?)", (author, number))
+            cursor.execute("INSERT INTO mytable(identifier, streak) VALUES(?, ?)", (str(identifier), number))
             await ctx.send("Streak added successfully")
         else:
-            cursor.execute("UPDATE mytable SET streak = ? WHERE user = ?", (number, author))
+            cursor.execute("UPDATE mytable SET streak = ? WHERE identifier = ?", (number, str(identifier)))
             await ctx.send("Your streak hass been added! To update your streak incrementally you can do `.streak done`")
 
     finally:
@@ -42,12 +49,12 @@ async def add(ctx, days : int):
 )
 async def done(ctx):
     authorMember = ctx.author
-    identifier = authorMember.id()
+    identifier = authorMember.id
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
     try:
         # Check if the user exists in the database
-        cursor.execute("SELECT streak FROM mytable WHERE user = ?", (id,))
+        cursor.execute("SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
 
 
         existing_streak = cursor.fetchone()
@@ -57,7 +64,7 @@ async def done(ctx):
             await ctx.send("To add a streak do `.streak add [your streak]`")
         else:
             # If the user exists
-            cursor.execute("UPDATE mytable SET streak = streak + 1 WHERE user = ?", (id,))
+            cursor.execute("UPDATE mytable SET streak = streak + 1 WHERE identifier = ?", (str(identifier),))
             await ctx.send("You done it")
 
     finally:
@@ -73,17 +80,18 @@ async def see(ctx):
     authorMember = ctx.author
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
-    cursor.execute("SELECT user, streak FROM mytable")
+    cursor.execute("SELECT identifier, streak FROM mytable")
     data = cursor.fetchall()
-
+    print(data)
     embed = discord.Embed(
         colour=discord.Colour.dark_red(),
         title="See streaks"
     )
 
     streak_info = ""
-    for user, streak in data:
-        streak_info += f"{user}: {streak}\n"
+    for entry in data:
+        x = await user_from_id(ctx, entry[0])
+        streak_info += f"{x}: {entry[1]}\n"
 
     embed.add_field(name="Streaks", value=streak_info, inline=False)
 
@@ -96,10 +104,10 @@ async def see(ctx):
 )
 async def seeme(ctx):
     authorMember = ctx.author
-    identifier =  authorMember.id()
+    identifier =  authorMember.id
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
-    cursor.execute("SELECT streak FROM mytable WHERE user =?", (id,))
+    cursor.execute("SELECT streak FROM mytable WHERE identifier =?", (str(identifier),))
     data = cursor.fetchone()
     datastr = str(data[0])
 
