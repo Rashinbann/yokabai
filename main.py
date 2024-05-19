@@ -7,8 +7,12 @@ import requests
 from dotenv import dotenv_values
 import os
 
-intents = discord.Intents.all()
+intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
+
+
+
 
 bot = commands.Bot(command_prefix='.', intents=intents)
 
