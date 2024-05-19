@@ -110,11 +110,17 @@ async def parse_anime(data, ctx):
         case (None, season):
             info = f"Season: {season}"
         case (episodes, season):
-            info = f"Episodes: {episodes}\nSeason: {season}"
+            info = f"Episodes: {episodes}\nSeason: {season}\n"
 
     desc = ellipcise(markdownify(desc))
+    score = data['average_score']
+    startingTime = data['starting_time']
+    endingTime = data['ending_time']
+    airingFormat = data['airing_format']
+    info2 = f"Format: {airingFormat}\nScore: {score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
+    desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(1,name="Info", value=info, inline=True)
+    embed.insert_field_at(1,name="Info", value=info+info2, inline=True)
     await ctx.send(embed=embed)
 
 @commands.command(
