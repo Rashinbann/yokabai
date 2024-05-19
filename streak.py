@@ -34,6 +34,8 @@ async def add(ctx, days : int):
         if existing_streak is None:
             cursor.execute("INSERT INTO mytable(identifier, streak) VALUES(?, ?)", (str(identifier), number))
             await ctx.send("Streak added successfully")
+        elif int(number) > 100000:
+            await ctx.send("Please don't do that :pleading_face:")
         else:
             cursor.execute("UPDATE mytable SET streak = ? WHERE identifier = ?", (number, str(identifier)))
             await ctx.send("Your streak hass been added! To update your streak incrementally you can do `.streak done`")
