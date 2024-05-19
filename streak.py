@@ -7,8 +7,9 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='.', intents=intents)
 
 async def user_from_id(ctx, id):
-    user = await ctx.message.guild.query_members(user_ids=[id]) # list of members with userid
-    return user[0] # there should be only one so get the first item in the list
+    mem = ctx.message.guild.get_member(id)
+    name = mem.nick or mem.global_name or mem.name
+    return name # there should be only one so get the first item in the list
 
 
 @commands.group(invoke_without_commmand=True)
