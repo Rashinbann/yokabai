@@ -21,5 +21,5 @@ async def on_ready():
     await bot.load_extension(f"streak")
     await bot.load_extension(f"anilist")
 
-TOKEN = dotenv_values(".env")["YOKABAI_TOKEN"] or ""
+TOKEN = dotenv_values(".env").get("YOKABAI_TOKEN") or ""
 bot.run(TOKEN)

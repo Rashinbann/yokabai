@@ -85,7 +85,6 @@ async def see(ctx):
     cursor = db.cursor()
     cursor.execute("SELECT identifier, streak FROM mytable")
     data = cursor.fetchall()
-    print(data)
     embed = discord.Embed(
         colour=discord.Colour.dark_red(),
         title="See streaks"
