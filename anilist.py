@@ -117,7 +117,10 @@ async def parse_anime(data, ctx):
     startingTime = data['starting_time']
     endingTime = data['ending_time']
     airingFormat = data['airing_format']
-    info2 = f"Format: {airingFormat}\nScore: {score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
+    airingStatus = data['airing_status']
+    info2 = f"Format: {airingFormat}\nStatus: {airingStatus}\nScore: {score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
+    if airingStatus == "RELEASING":
+        info2 = f"Format: {airingFormat}\nStatus: {airingStatus}\nScore: {score}\nStart Date: {startingTime}\n"
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0,name="Synopsis", value=desc, inline=True)
     embed.insert_field_at(1,name="Info", value=info+info2, inline=True)
