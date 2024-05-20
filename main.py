@@ -24,6 +24,7 @@ async def on_ready():
     print("we have logged in as user {0.user}".format(bot))
     await bot.load_extension(f"streak")
     await bot.load_extension(f"anilist")
+    await bot.load_extension(f"test")
 
 TOKEN = dotenv_values(".env").get("YOKABAI_TOKEN") or ""
 bot.run(TOKEN)
