@@ -36,45 +36,40 @@ async def parse_manga(data, ctx):
 
     chapters = f"Chapters: {data['chapters']}"
     volumes = f"Volumes: {data['volumes']}"
-    releaseFormat = f"Format: {data['release_format']}"
-    releaseStatus = f"Status: {data['release_status']}"
+    releaseFormat = data['release_format'].lower()
+    releaseFormat = f"Format: {releaseFormat}"
     if releaseStatus == "NOT_YET_RELEASED":
         releaseStatus = "Unreleased"
     else:
         releaseStatus = releaseStatus.capitalize()
+    releaseStatus = f"Status: {data['release_status']}"
     averageScore = f"Score: {data['average_score']}"
 
     # fields = [chapters, volumes, releaseFormat, releaseStatus, averageScore, startTime, endTime]
-    if releaseStatus == "Status: not_yet_released":
-        fields = "Info Unavailable"
-        info = fields
+    if releaseStatus == "Status: Unreleased":
+        info = "Info Unavailable"
     else:
         match(chapters, volumes):
             case ("Chapters: None", "Volumes: None"):
                 if averageScore == "None":
                     chapters = "Chapters: N/A"
-                    fields = [chapters, releaseFormat.lower(), releaseStatus]
-                    info = pretty_list(fields)
+                    fields = [chapters, releaseFormat, releaseStatus]
                 else:
-                    fields = [chapters, releaseFormat.lower(),
+                    fields = [chapters, releaseFormat,
                               releaseStatus, averageScore]
-                    info = pretty_list(fields)
             case (chapters, "Volumes: None"):
                 if averageScore == "None":
-                    fields = [chapters, releaseFormat.lower(), releaseStatus]
-                    info = pretty_list(fields)
+                    fields = [chapters, releaseFormat, releaseStatus]
                 else:
-                    fields = [chapters, releaseFormat.lower(),
+                    fields = [chapters, releaseFormat,
                               releaseStatus, averageScore]
-                    info = pretty_list(fields)
             case(chapters, volumes):
                 if averageScore == "Score: None":
-                    fields = [chapters, releaseFormat.lower(), releaseStatus]
-                    info = pretty_list(fields)
+                    fields = [chapters, releaseFormat, releaseStatus]
                 else:
-                    fields = [chapters, volumes, releaseFormat.lower(),
+                    fields = [chapters, volumes, releaseFormat,
                               releaseStatus, averageScore]
-                    info = pretty_list(fields)
+            info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0, name="Synopsis", value=desc, inline=True)
