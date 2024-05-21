@@ -7,6 +7,7 @@ from AnilistPython import Anilist
 import textwrap
 import re
 import datetime as dt
+from util import pretty_list
 anilist = Anilist()
 
 
@@ -122,42 +123,42 @@ async def parse_anime(data, ctx):
     aniId = anilist.get_anime_id(name)
     embed.set_author(name="Go to page",
                      url=f"https://anilist.co/anime/{aniId}")
-    episodes = data['airing_episodes']
 
 
+
+    episodes = f"Episodes: {data['airing_episodes']}"
 
     season = data['season'] or "Unavailable"
-    season = season.capitalize()
-    # TODO: Deal with "Not Yet Released" anime and manga w
-    # This code sucks ass and I have no idea how to deal with that
-    # Good luck future me LMAO
-
+    season = f"Season: {season.capitalize()}"
+    airingFormat = f"Format: {data['airing_format']}"
     airingStatus = data['airing_status']
-    airingFormat = data['airing_format']
-    startingTime = data['starting_time']
-    endingTime = data['ending_time']
-    score = data['average_score']
-    if airingStatus != "NOT_YET_RELEASED":
-        match (episodes, season):
-            case (None, None):
-                info = "Episode info unavailable"
-            case (episodes, None):
-                info = f"Episodes: {episodes}"
-            case (None, season):
-                info = f"Season: {season}"
-            case (episodes, season):
-                info = f"Episodes: {episodes}\nSeason: {season}\n"
-
-        info += f"Format: {airingFormat}\nStatus: {airingStatus}\nScore: {
-            score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
-
-    else:
-        info = "Episode info unavailable"
-
     if airingStatus == "RELEASING":
+        airingStatus = "Releasing"
+    elif airingStatus == "FINISHED":
+        airingStatus = "Finished"
+    elif airingStatus == "NOT_YET_RELEASED":
+        airingStatus = "Unreleased"
+
+    airingStatusPretty = f"Status: {airingStatus}"
+    score = f"Score: {data['average_score']}"
+    startingTime = f"Start date: {data['starting_time']}"
+    endingTime = f"End date: {data['ending_time']}"
+
+
+    # fields = [episodes, relativeAiringDays, season, airingFormat, airingStatus, score, startingTime, endingTime]
+    if airingStatus == "Unreleased":
+        info = "Info unavailable"
+    elif airingStatus == "Releasing":
         nextAiring = data['next_airing_ep']['timeUntilAiring']
-        relativeAiringDays = dt.timedelta(seconds=nextAiring).days
-        info += f"Next Episode In: {relativeAiringDays} day(s)\n"
+        days = dt.timedelta(seconds=nextAiring).days
+        relativeAiringDays = f"Next episode in: {str(days)} day"
+        if days != 1:
+            relativeAiringDays += "s"
+        fields = [episodes, relativeAiringDays, season, airingFormat, airingStatusPretty, score, startingTime]
+        info = pretty_list(fields)
+    elif airingStatus == "Finished":
+        fields = [episodes, season, airingFormat, airingStatusPretty, score, startingTime, endingTime]
+        info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
     desc = ellipcise(markdownify(desc))

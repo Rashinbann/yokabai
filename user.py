@@ -2,9 +2,8 @@ import discord
 from discord.ext import commands
 from bs4 import BeautifulSoup
 import requests
+from util import pretty_list
 
-def pretty_list(l, sep='\n'):
-    return sep.join(l)
 
 @commands.command()
 async def user(ctx, *name):
