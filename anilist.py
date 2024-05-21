@@ -149,9 +149,8 @@ async def parse_anime(data, ctx):
     elif airingStatus == "Releasing":
         nextAiring = data['next_airing_ep']['timeUntilAiring']
         days = dt.timedelta(seconds=nextAiring).days
-        relativeAiringDays = f"Next episode in: {str(days)} day"
-        if days != 1:
-            relativeAiringDays += "s"
+        relativeAiringDays = f"Next episode in: {str(days)} day" + "s" if days != 1 else ""
+
         fields = [episodes, relativeAiringDays, season, airingFormat, airingStatusPretty, score, startingTime]
         info = pretty_list(fields)
     elif airingStatus == "Finished":
