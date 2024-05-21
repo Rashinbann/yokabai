@@ -6,7 +6,7 @@ from discord.ext import commands
 from AnilistPython import Anilist
 import textwrap
 import re
-
+import datetime as dt
 anilist = Anilist()
 
 
@@ -108,53 +108,61 @@ async def manga(ctx, *name):
 
 
 async def parse_anime(data, ctx):
-    try:
-        name = ctx.message.content.removeprefix(".anime ")
-        data = anilist.get_anime(name)
-        desc = data['desc']
-        embed = discord.Embed(
-            colour=discord.Colour.dark_blue(),
-            title=data['name_romaji'],
-            description=data['name_english']
-        )
-        embed.set_footer(text=data['genres'])
-        embed.set_thumbnail(url=data['cover_image'])
-        embed.set_image(url=data['banner_image'])
-        aniId = anilist.get_anime_id(name)
-        embed.set_author(name="Go to page",
-                         url=f"https://anilist.co/anime/{aniId}")
-        # Works good
-        episodes = data['airing_episodes']
-        season = data['season'].capitalize()
-    except AttributeError:
-        await ctx.send("test")
+    name = ctx.message.content.removeprefix(".anime ")
+    data = anilist.get_anime(name)
+    desc = data['desc']
+    embed = discord.Embed(
+        colour=discord.Colour.dark_blue(),
+        title=data['name_romaji'],
+        description=data['name_english']
+    )
+    embed.set_footer(text=data['genres'])
+    embed.set_thumbnail(url=data['cover_image'])
+    embed.set_image(url=data['banner_image'])
+    aniId = anilist.get_anime_id(name)
+    embed.set_author(name="Go to page",
+                     url=f"https://anilist.co/anime/{aniId}")
+    episodes = data['airing_episodes']
+
+
+
+    season = data['season'] or "Unavailable"
+    season = season.capitalize()
     # TODO: Deal with "Not Yet Released" anime and manga w
     # This code sucks ass and I have no idea how to deal with that
     # Good luck future me LMAO
 
-    match (episodes, season):
-        case (None, None):
-            info = "Episode info unavailabe"
-        case (episodes, None):
-            info = f"Episodes: {episodes}"
-        case (None, season):
-            info = f"Season: {season}"
-        case (episodes, season):
-            info = f"Episodes: {episodes}\nSeason: {season}\n"
-    desc = ellipcise(markdownify(desc))
-    score = data['average_score']
+    airingStatus = data['airing_status']
+    airingFormat = data['airing_format']
     startingTime = data['starting_time']
     endingTime = data['ending_time']
-    airingFormat = data['airing_format']
-    airingStatus = data['airing_status']
-    info2 = f"Format: {airingFormat}\nStatus: {airingStatus}\nScore: {
-        score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
+    score = data['average_score']
+    if airingStatus != "NOT_YET_RELEASED":
+        match (episodes, season):
+            case (None, None):
+                info = "Episode info unavailable"
+            case (episodes, None):
+                info = f"Episodes: {episodes}"
+            case (None, season):
+                info = f"Season: {season}"
+            case (episodes, season):
+                info = f"Episodes: {episodes}\nSeason: {season}\n"
+
+        info += f"Format: {airingFormat}\nStatus: {airingStatus}\nScore: {
+            score}\nStart Date: {startingTime}\nEnd Date: {endingTime}"
+
+    else:
+        info = "Episode info unavailable"
+
     if airingStatus == "RELEASING":
-        info2 = f"Format: {airingFormat}\nStatus: {
-            airingStatus}\nScore: {score}\nStart Date: {startingTime}\n"
+        nextAiring = data['next_airing_ep']['timeUntilAiring']
+        relativeAiringDays = dt.timedelta(seconds=nextAiring).days
+        info += f"Next Episode In: {relativeAiringDays} day(s)\n"
+
+    desc = ellipcise(markdownify(desc))
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0, name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(1, name="Info", value=info+info2, inline=True)
+    embed.insert_field_at(1, name="Info", value=info, inline=True)
     await ctx.send(embed=embed)
 
 
