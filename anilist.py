@@ -132,12 +132,10 @@ async def parse_anime(data, ctx):
     season = f"Season: {season.capitalize()}"
     airingFormat = f"Format: {data['airing_format']}"
     airingStatus = data['airing_status']
-    if airingStatus == "RELEASING":
-        airingStatus = "Releasing"
-    elif airingStatus == "FINISHED":
-        airingStatus = "Finished"
-    elif airingStatus == "NOT_YET_RELEASED":
+    if airingStatus == "NOT_YET_RELEASED":
         airingStatus = "Unreleased"
+    else:
+        airingStatus = airingStatus.capitalize()
 
     airingStatusPretty = f"Status: {airingStatus}"
     score = f"Score: {data['average_score']}"
