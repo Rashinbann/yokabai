@@ -12,19 +12,18 @@ intents.message_content = True
 intents.members = True
 
 
-
-
 bot = commands.Bot(command_prefix='.', intents=intents)
 
 db = sqlite3.connect('streakdb.db')
 cursor = db.cursor()
+
 
 @bot.event
 async def on_ready():
     print("we have logged in as user {0.user}".format(bot))
     await bot.load_extension(f"streak")
     await bot.load_extension(f"anilist")
-    await bot.load_extension(f"test")
+    await bot.load_extension(f"user")
 
 TOKEN = dotenv_values(".env").get("YOKABAI_TOKEN") or ""
 bot.run(TOKEN)
