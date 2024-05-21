@@ -11,10 +11,14 @@ async def user(ctx, *name):
     soup = BeautifulSoup(page.text, features="html.parser")
     username = soup.find('h1', attrs={'class': 'name'}).string
     avatar = soup.findAll('img', attrs={'class': 'avatar'})
-    link = avatar[0]
-    getlink = link.get('src')
+    link = avatar[0].get('src')
     about = soup.find('div', attrs={'class': 'about'}).string
-    totalAni = soup.find('div', attrs={'class': 'value'}).string
+    stats = soup.findAll('div', attrs={'class': 'stat'})
+
+    for stat in stats:
+        value=stat.findChildren('div', attrs={'class': 'value'}, recursive=False).string
+        print(value)
+
     embed = discord.Embed(
         title=username
     )
