@@ -45,8 +45,9 @@ async def parse_manga(data, ctx):
     averageScore = f"Score: {data['average_score']}"
 
     # fields = [chapters, volumes, releaseFormat, releaseStatus, averageScore, startTime, endTime]
-    if releaseStatus == "NOT_YET_RELEASED":
+    if releaseStatus == "Status: not_yet_released":
         fields = "Info Unavailable"
+        info = fields
     else:
         match(chapters, volumes):
             case ("Chapters: None", "Volumes: None"):
