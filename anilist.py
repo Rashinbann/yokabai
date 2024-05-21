@@ -4,44 +4,9 @@ import requests
 import discord
 from discord.ext import commands
 from AnilistPython import Anilist
-import textwrap
-import re
 import datetime as dt
-from util import pretty_list
+from util import pretty_list, ellipcise, markdownify
 anilist = Anilist()
-
-
-def ellipcise(text):
-    return textwrap.shorten(text, width=1024, placeholder="...")
-
-
-markdown_map = [
-    {'tag': ['<i>', '</i>'], 'markdown': '*'},
-    {'tag': ['<b>', '</b>'], 'markdown': '**'},
-    {'tag': '<br>', 'markdown': '\n\n'}
-
-]
-
-
-def convert_to_markdown(text, replace_map):
-    for replacement in replace_map:
-        tag = replacement['tag']
-        markdown = replacement['markdown']
-
-        if isinstance(tag, list):
-            for t in tag:
-                text = text.replace(t, markdown)
-        elif isinstance(tag, str):
-            text = text.replace(tag, markdown)
-        else:
-            raise TypeError(
-                f"tag must be of type 'list' or 'str', was {type(tag)}")
-
-    return text
-
-
-def markdownify(text):
-    return convert_to_markdown(text, markdown_map)
 
 
 @commands.command()
@@ -68,31 +33,51 @@ async def parse_manga(data, ctx):
     mangaId = anilist.get_manga_id(name)
     embed.set_author(name="Go to page",
                      url=f"https://anilist.co/manga/{mangaId}")
-    chapters = data['chapters']
-    volumes = data['volumes']
-    match (chapters, volumes):
-        case (None, None):
-            info = "Chapter info unavailable\n"
-        case (chapters, None):
-            info = f"Chapters: {chapters}"
-        case (None, volumes):
-            info = f"Volumes: {volumes}"
-        case (chapters, volumes):
-            info = f"Chapters: {chapters}\nVolumes: {volumes}\n"
 
-    releaseFormat = data['release_format']
-    releaseStatus = data['release_status']
-    averageScore = data['average_score']
-    startTime = data['starting_time']
-    endTime = data['ending_time']
-    info2 = f"Format: {releaseFormat}\nStatus: {releaseStatus}\nScore: {
-        averageScore}\nStart Time: {startTime}\nEnd Time: {endTime}"
-    if releaseStatus == "RELEASING":
-        info2 = f"Format: {releaseFormat}\nStatus: {releaseStatus}\nScore: {
-            averageScore}\nStart Time: {startTime}\n"
+    chapters = f"Chapters: {data['chapters']}"
+    volumes = f"Volumes: {data['volumes']}"
+    releaseFormat = f"Format: {data['release_format']}"
+    releaseStatus = f"Status: {data['release_status']}"
+    if releaseStatus == "NOT_YET_RELEASED":
+        releaseStatus = "Unreleased"
+    else:
+        releaseStatus = releaseStatus.capitalize()
+    averageScore = f"Score: {data['average_score']}"
+
+    # fields = [chapters, volumes, releaseFormat, releaseStatus, averageScore, startTime, endTime]
+    if releaseStatus == "NOT_YET_RELEASED":
+        fields = "Info Unavailable"
+    else:
+        match(chapters, volumes):
+            case ("Chapters: None", "Volumes: None"):
+                if averageScore == "None":
+                    chapters = "Chapters: N/A"
+                    fields = [chapters, releaseFormat.lower(), releaseStatus]
+                    info = pretty_list(fields)
+                else:
+                    fields = [chapters, releaseFormat.lower(),
+                              releaseStatus, averageScore]
+                    info = pretty_list(fields)
+            case (chapters, "Volumes: None"):
+                if averageScore == "None":
+                    fields = [chapters, releaseFormat.lower(), releaseStatus]
+                    info = pretty_list(fields)
+                else:
+                    fields = [chapters, releaseFormat.lower(),
+                              releaseStatus, averageScore]
+                    info = pretty_list(fields)
+            case(chapters, volumes):
+                if averageScore == "Score: None":
+                    fields = [chapters, releaseFormat.lower(), releaseStatus]
+                    info = pretty_list(fields)
+                else:
+                    fields = [chapters, volumes, releaseFormat.lower(),
+                              releaseStatus, averageScore]
+                    info = pretty_list(fields)
+
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0, name="Synopsis", value=desc, inline=True)
-    embed.insert_field_at(1, name="Info", value=info+info2, inline=True)
+    embed.insert_field_at(1, name="Info", value=info, inline=True)
 
     await ctx.send(embed=embed)
 
@@ -124,8 +109,6 @@ async def parse_anime(data, ctx):
     embed.set_author(name="Go to page",
                      url=f"https://anilist.co/anime/{aniId}")
 
-
-
     episodes = f"Episodes: {data['airing_episodes']}"
 
     season = data['season'] or "Unavailable"
@@ -142,19 +125,21 @@ async def parse_anime(data, ctx):
     startingTime = f"Start date: {data['starting_time']}"
     endingTime = f"End date: {data['ending_time']}"
 
-
     # fields = [episodes, relativeAiringDays, season, airingFormat, airingStatus, score, startingTime, endingTime]
     if airingStatus == "Unreleased":
         info = "Info unavailable"
     elif airingStatus == "Releasing":
         nextAiring = data['next_airing_ep']['timeUntilAiring']
         days = dt.timedelta(seconds=nextAiring).days
-        relativeAiringDays = f"Next episode in: {str(days)} day" + "s" if days != 1 else ""
+        relativeAiringDays = f"Next episode in: {
+            str(days)} day" + "s" if days != 1 else ""
 
-        fields = [episodes, relativeAiringDays, season, airingFormat, airingStatusPretty, score, startingTime]
+        fields = [episodes, relativeAiringDays, season,
+                  airingFormat, airingStatusPretty, score, startingTime]
         info = pretty_list(fields)
     elif airingStatus == "Finished":
-        fields = [episodes, season, airingFormat, airingStatusPretty, score, startingTime, endingTime]
+        fields = [episodes, season, airingFormat,
+                  airingStatusPretty, score, startingTime, endingTime]
         info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
