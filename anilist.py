@@ -36,13 +36,14 @@ async def parse_manga(data, ctx):
 
     chapters = f"Chapters: {data['chapters']}"
     volumes = f"Volumes: {data['volumes']}"
-    releaseFormat = data['release_format'].lower()
+    releaseFormat = data['release_format'].capitalize()
     releaseFormat = f"Format: {releaseFormat}"
+    releaseStatus = data['release_status']
     if releaseStatus == "NOT_YET_RELEASED":
         releaseStatus = "Unreleased"
     else:
         releaseStatus = releaseStatus.capitalize()
-    releaseStatus = f"Status: {data['release_status']}"
+    releaseStatus = f"Status: {releaseStatus}"
     averageScore = f"Score: {data['average_score']}"
 
     # fields = [chapters, volumes, releaseFormat, releaseStatus, averageScore, startTime, endTime]
@@ -50,8 +51,7 @@ async def parse_manga(data, ctx):
         info = "Info Unavailable"
     else:
         if chapters == "Chapters: None":
-            chapters == "Chapters: N/A"
-
+            chapters = "Chapters: N/A"
 
         match(chapters, volumes):
             case (chapters, "Volumes: None"):
@@ -59,9 +59,9 @@ async def parse_manga(data, ctx):
             case(chapters, volumes):
                 fields = [chapters, volumes, releaseFormat, releaseStatus]
 
-            if averageScore != "Score: None":
-                fields += averageScore
-            info = pretty_list(fields)
+        if averageScore != "Score: None":
+            fields.append(averageScore)
+        info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
     embed.insert_field_at(0, name="Synopsis", value=desc, inline=True)
