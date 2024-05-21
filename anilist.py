@@ -49,26 +49,18 @@ async def parse_manga(data, ctx):
     if releaseStatus == "Status: Unreleased":
         info = "Info Unavailable"
     else:
+        if chapters == "Chapters: None":
+            chapters == "Chapters: N/A"
+
+
         match(chapters, volumes):
-            case ("Chapters: None", "Volumes: None"):
-                if averageScore == "None":
-                    chapters = "Chapters: N/A"
-                    fields = [chapters, releaseFormat, releaseStatus]
-                else:
-                    fields = [chapters, releaseFormat,
-                              releaseStatus, averageScore]
             case (chapters, "Volumes: None"):
-                if averageScore == "None":
-                    fields = [chapters, releaseFormat, releaseStatus]
-                else:
-                    fields = [chapters, releaseFormat,
-                              releaseStatus, averageScore]
+                fields = [chapters, releaseFormat, releaseStatus]
             case(chapters, volumes):
-                if averageScore == "Score: None":
-                    fields = [chapters, releaseFormat, releaseStatus]
-                else:
-                    fields = [chapters, volumes, releaseFormat,
-                              releaseStatus, averageScore]
+                fields = [chapters, volumes, releaseFormat, releaseStatus]
+
+            if averageScore != "Score: None":
+                fields += averageScore
             info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
