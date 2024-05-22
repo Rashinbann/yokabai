@@ -6,15 +6,16 @@ cursor = db.cursor()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='.', intents=intents)
 
+
 async def user_from_id(ctx, id):
     mem = ctx.message.guild.get_member(id)
     name = mem.nick or mem.global_name or mem.name
-    return name # there should be only one so get the first item in the list
+    return name  # there should be only one so get the first item in the list
 
 
 @commands.group(invoke_without_commmand=True)
 async def streak(ctx):
-     if ctx.invoked_subcommand is None:
+    if ctx.invoked_subcommand is None:
         await ctx.send(f"To add a streak do `.streak add [your streak]`")
 
 
@@ -22,29 +23,31 @@ async def streak(ctx):
     brief="Adds your streak to the database",
     description="This will also update your streak to the number that you set it to, if you already have one."
 )
-async def add(ctx, days : int):
+async def add(ctx, days: int):
     authorMember = ctx.author
     identifier = authorMember.id
     number = ctx.message.content.removeprefix(".streak add ")
+    cursor = db.cursor()
     try:
-        cursor.execute("SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
-
+        cursor.execute(
+            "SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
 
         existing_streak = cursor.fetchone()
 
         if existing_streak is None:
-            cursor.execute("INSERT INTO mytable(identifier, streak) VALUES(?, ?)", (str(identifier), number))
+            cursor.execute(
+                "INSERT INTO mytable(identifier, streak) VALUES(?, ?)", (str(identifier), number))
             await ctx.send("Streak added successfully")
         elif int(number) > 100000:
             await ctx.send("Please don't do that :pleading_face:")
         else:
-            cursor.execute("UPDATE mytable SET streak = ? WHERE identifier = ?", (number, str(identifier)))
+            cursor.execute(
+                "UPDATE mytable SET streak = ? WHERE identifier = ?", (number, str(identifier)))
             await ctx.send("Your streak hass been added! To update your streak incrementally you can do `.streak done`")
 
     finally:
         db.commit()
         cursor.close()
-        db.close()
 
 
 @streak.command(
@@ -57,8 +60,8 @@ async def done(ctx):
     cursor = db.cursor()
     try:
         # Check if the user exists in the database
-        cursor.execute("SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
-
+        cursor.execute(
+            "SELECT streak FROM mytable WHERE identifier = ?", (str(identifier),))
 
         existing_streak = cursor.fetchone()
 
@@ -67,7 +70,8 @@ async def done(ctx):
             await ctx.send("To add a streak do `.streak add [your streak]`")
         else:
             # If the user exists
-            cursor.execute("UPDATE mytable SET streak = streak + 1 WHERE identifier = ?", (str(identifier),))
+            cursor.execute(
+                "UPDATE mytable SET streak = streak + 1 WHERE identifier = ?", (str(identifier),))
             await ctx.send("You done it")
 
     finally:
@@ -81,6 +85,7 @@ async def done(ctx):
 )
 async def see(ctx):
     authorMember = ctx.author
+    mem = ctx.message.guild.get_member(id)
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
     cursor.execute("SELECT identifier, streak FROM mytable")
@@ -94,25 +99,29 @@ async def see(ctx):
     for entry in data:
         x = await user_from_id(ctx, entry[0])
         streak_info += f"{x}: {entry[1]}\n"
-
+    print(mem)
     embed.add_field(name="Streaks", value=streak_info, inline=False)
 
     await ctx.send(embed=embed)
 
     db.close()
 
+
 @streak.command(
     brief="See your current streak"
 )
 async def seeme(ctx):
     authorMember = ctx.author
-    identifier =  authorMember.id
+    identifier = authorMember.id
     db = sqlite3.connect('streakdb.db')
     cursor = db.cursor()
-    cursor.execute("SELECT streak FROM mytable WHERE identifier =?", (str(identifier),))
+    cursor.execute(
+        "SELECT streak FROM mytable WHERE identifier =?", (str(identifier),))
     data = cursor.fetchone()
     datastr = str(data[0])
 
     await ctx.send(f"Your current streak is {datastr}")
+
+
 async def setup(bot):
     bot.add_command(streak)
