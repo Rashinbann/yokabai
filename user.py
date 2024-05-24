@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 import requests
 from util import pretty_list
 from contextlib import suppress
@@ -11,11 +11,11 @@ async def user(ctx):
     user = ctx.message.content.removeprefix(".user ")
     with suppress(AttributeError):
         page = requests.get(f"https://anilist.co/user/{user}")
-        soup = BeautifulSoup(page.text, features="html.parser")
+        soup = bs(page.text, features="html.parser")
         username = soup.find('h1', attrs={'class': 'name'}).string
         user = ctx.message.content.removeprefix(".user ")
         page = requests.get(f"https://anilist.co/user/{user}")
-        soup = BeautifulSoup(page.text, features="html.parser")
+        soup = bs(page.text, features="html.parser")
         username = soup.find('h1', attrs={'class': 'name'}).string
         avatar = soup.findAll('img', attrs={'class': 'avatar'})[0].get('src')
         banner = soup.findAll('div', attrs={'class': 'banner'})[
