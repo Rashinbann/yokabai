@@ -1,20 +1,23 @@
 import discord
 from discord.ext import commands
 import random
+import catstats
+import json
 
-cats = ["Siamese", "Persian", "Sphinx"]
-catimg = "https://cdn.discordapp.com/avatars/993804277631963206/3071341d6a3437a0572cf11d8a11f1c9.png?size=256?size=128"
-catimgsad = "https://cdn.discordapp.com/attachments/1044500978973540374/1244213873955962930/tuCu6BT-_400x400.jpg?ex=66544bf7&is=6652fa77&hm=7ed639f6df0c2068c0576e2426371ef2ad02ae6c27511c399ea96132826d02ce&"
-catimghappy = "https://cdn.discordapp.com/attachments/1044500978973540374/1244229154203897856/web_cat.jpg?ex=66545a33&is=665308b3&hm=032ecba7d6c53c9287a00079bbbc228ada32ba2b8859cddd83b7c885a258a2e4&"
+state = {}
+
+
+def get_state(key):
+    return state.get(key)
+
+
+def set_state(key, val):
+    state[key] = val
 
 
 class ViewDesu(discord.ui.View):
 
     foo: bool = None
-
-    async def disable_all_items(self):
-        for item in self.children:
-            item.disabled = True
 
     async def on_timeout(self) -> None:
         timeoutembed = discord.Embed(title="Out of time! The cat left...")
@@ -23,28 +26,27 @@ class ViewDesu(discord.ui.View):
             name="You have to do something or the cat will get bored!",
             value="You can feed the cat to befriend it or ignore the cat... if you'd like :pouting_cat:",
         )
-        timeoutembed.set_thumbnail(url=catimg)
-        await self.disable_all_items()
-        await self.message.edit(embed=timeoutembed, view=self)
+        timeoutembed.set_thumbnail(url=catstats.catimg)
+        await self.message.edit(embed=timeoutembed, view=None)
 
     @discord.ui.button(label="Feed", style=discord.ButtonStyle.success)
     async def Feed(self, interaction: discord.Interaction, button: discord.ui.button):
         embedfed = discord.Embed(title="You fed the cat!")
-        friending = random.choice([True, False])
-        if friending is True:
+        friending = random.uniform(0, 1)
+        if friending < 0.70:
             embedfed.insert_field_at(
                 0,
                 name="You're my frind now!",
                 value="The cat is now your friend! You can have soft tacos later!",
             )
-            embedfed.set_thumbnail(url=catimghappy)
+            embedfed.set_thumbnail(url=catstats.catimghappy)
         else:
             embedfed.insert_field_at(
                 0,
-                name="The cat took the food and ran off into the distance....",
+                name="The cat took the food and ran off into the distance...",
                 value="Better luck next time!",
             )
-            embedfed.set_thumbnail(url=catimghappy)
+            embedfed.set_thumbnail(url=catstats.catimghappy)
         await interaction.response.edit_message(embed=embedfed, view=None)
         self.foo = True
         self.stop()
@@ -53,29 +55,35 @@ class ViewDesu(discord.ui.View):
     async def Ignore(self, interaction: discord.Interaction, button: discord.ui.button):
         foo: bool = None
         embedignored = discord.Embed(title="You ignored the cat...")
-        embedignored.set_thumbnail(url=catimgsad)
+        embedignored.set_thumbnail(url=catstats.catimgsad)
         embedignored.insert_field_at(
             0,
             name="The cat went off into the distance",
             value="Type `.neko` again for a different cat... maybe this time you won't ignore it!",
         )
-        await interaction.response.edit_message(embed=embedignored)
+        await interaction.response.edit_message(embed=embedignored, view=None)
         self.foo = False
         self.stop()
 
 
 @commands.command()
 async def neko(ctx):
+    set_state("chosen_cat", random.choice(catstats.cats))
+    set_state("stats", catstats.cat_map[get_state("chosen_cat")])
+
     embed = discord.Embed(
-        title="Neko", description=f"A wild {random.choice(cats)} appeared!"
+        title="Neko", description=f"A wild {get_state('chosen_cat')} cat appeared!"
     )
-    embed.set_thumbnail(url=catimg)
-    embed.insert_field_at(0, name="What do you want to do?", value="Stats:\n")
-    view = ViewDesu(timeout=3)
+    embed.set_thumbnail(url=catstats.catimg)
+    embed.insert_field_at(
+        0,
+        name="What do you want to do?",
+        value=f"Strength: {get_state('stats')['Strength']}\nHealth: {get_state('stats')["Health"]}\nAgility: {get_state('stats')["Agility"]}",
+    )
+    view = ViewDesu(timeout=30)
     message = await ctx.send(embed=embed, view=view)
     view.message = message
     await view.wait()
-    await view.disable_all_items()
 
     if view.foo is None:
         print("Timeout")
