@@ -15,6 +15,11 @@ def set_state(key, val):
     state[key] = val
 
 
+def jsonDumping(file):
+    with open(file, "w") as outfile:
+        json.dump(get_state("stats"), outfile)
+
+
 class ViewDesu(discord.ui.View):
 
     foo: bool = None
@@ -40,6 +45,9 @@ class ViewDesu(discord.ui.View):
                 value="The cat is now your friend! You can have soft tacos later!",
             )
             embedfed.set_thumbnail(url=catstats.catimghappy)
+            set_state("userid", interaction.user.id)
+            with open("gay.json", "w+") as outfile:
+                json.dump(state, outfile)
         else:
             embedfed.insert_field_at(
                 0,
@@ -48,6 +56,7 @@ class ViewDesu(discord.ui.View):
             )
             embedfed.set_thumbnail(url=catstats.catimghappy)
         await interaction.response.edit_message(embed=embedfed, view=None)
+        interaction_id = interaction.id
         self.foo = True
         self.stop()
 
