@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import catstats
-import json
+import sqlite3
 
 state = {}
 
@@ -15,9 +15,7 @@ def set_state(key, val):
     state[key] = val
 
 
-def jsonDumping(file):
-    with open(file, "w") as outfile:
-        json.dump(get_state("stats"), outfile)
+statsdayo = get_state("stats")
 
 
 class ViewDesu(discord.ui.View):
@@ -45,9 +43,21 @@ class ViewDesu(discord.ui.View):
                 value="The cat is now your friend! You can have soft tacos later!",
             )
             embedfed.set_thumbnail(url=catstats.catimghappy)
-            set_state("userid", interaction.user.id)
-            with open("gay.json", "w+") as outfile:
-                json.dump(state, outfile)
+            userid = interaction.user.id
+            db = sqlite3.connect("catinv.db")
+            cursor = db.cursor()
+            cursor.execute(
+                "INSERT INTO inv(user, cat, strength, health, agility) VALUES(?, ?, ?, ?, ?)",
+                (
+                    userid,
+                    get_state("chosen_cat"),
+                    get_state("stats")["Strength"],
+                    get_state("stats")["Health"],
+                    get_state("stats")["Agility"],
+                ),
+            )
+            db.commit()
+            cursor.close()
         else:
             embedfed.insert_field_at(
                 0,
@@ -56,7 +66,6 @@ class ViewDesu(discord.ui.View):
             )
             embedfed.set_thumbnail(url=catstats.catimghappy)
         await interaction.response.edit_message(embed=embedfed, view=None)
-        interaction_id = interaction.id
         self.foo = True
         self.stop()
 
@@ -75,7 +84,7 @@ class ViewDesu(discord.ui.View):
         self.stop()
 
 
-@commands.command()
+@commands.group()
 async def neko(ctx):
     set_state("chosen_cat", random.choice(catstats.cats))
     set_state("stats", catstats.cat_map[get_state("chosen_cat")])
@@ -102,5 +111,15 @@ async def neko(ctx):
         print("Ignored")
 
 
+@commands.command()
+async def see(ctx):
+    db = sqlite3.connect("catinv.db")
+    cursor = db.cursor()
+    cursor.execute("SELECT user, cat, strength, health, agility FROM inv")
+    data = cursor.fetchall()
+    print(data)
+
+
 async def setup(bot):
     bot.add_command(neko)
+    bot.add_command(see)
