@@ -4,6 +4,10 @@ import random
 import catstats
 import sqlite3
 
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
 state = {}
 
 
@@ -71,7 +75,6 @@ class ViewDesu(discord.ui.View):
 
     @discord.ui.button(label="Ignore", style=discord.ButtonStyle.red)
     async def Ignore(self, interaction: discord.Interaction, button: discord.ui.button):
-        foo: bool = None
         embedignored = discord.Embed(title="You ignored the cat...")
         embedignored.set_thumbnail(url=catstats.catimgsad)
         embedignored.insert_field_at(
@@ -113,11 +116,16 @@ async def neko(ctx):
 
 @commands.command()
 async def see(ctx):
+    authorid = ctx.author.id
     db = sqlite3.connect("catinv.db")
     cursor = db.cursor()
-    cursor.execute("SELECT user, cat, strength, health, agility FROM inv")
+    cursor.execute(
+        "SELECT cat, strength, health, agility FROM inv WHERE user = ?",
+        (authorid,),
+    )
     data = cursor.fetchall()
     print(data)
+    await ctx.send(data)
 
 
 async def setup(bot):
