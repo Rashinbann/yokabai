@@ -21,7 +21,7 @@ async def on_ready():
     await bot.load_extension("streak")
     await bot.load_extension("anilist")
     await bot.load_extension("user")
-    await bot.load_extension("test")
+    await bot.load_extension("neko.neko")
 
 
 TOKEN = dotenv_values(".env").get("YOKABAI_TOKEN") or ""
