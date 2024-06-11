@@ -6,6 +6,7 @@ from discord.ext import commands
 from AnilistPython import Anilist
 import datetime as dt
 from util import pretty_list, ellipcise, markdownify
+
 anilist = Anilist()
 
 
@@ -13,32 +14,29 @@ anilist = Anilist()
 async def fox(ctx):
     responsefox = requests.get("https://randomfox.ca/floof")
     fox = responsefox.json()
-    await ctx.send(fox['image'])
+    await ctx.send(fox["image"])
 
 
-@commands.command(
-    brief="Search Anilist for a manga and post it's info in the chat"
-)
+@commands.command(brief="Search Anilist for a manga and post it's info in the chat")
 async def parse_manga(data, ctx):
     name = ctx.message.content.removeprefix(".manga ")
-    desc = data['desc']
+    desc = data["desc"]
     embed = discord.Embed(
         colour=discord.Colour.blue(),
-        title=data['name_romaji'],
-        description=data['name_english']
+        title=data["name_romaji"],
+        description=data["name_english"],
     )
-    embed.set_footer(text=data['genres'])
-    embed.set_thumbnail(url=data['cover_image'])
+    embed.set_footer(text=data["genres"])
+    embed.set_thumbnail(url=data["cover_image"])
     embed.set_image(url=data["banner_image"])
     mangaId = anilist.get_manga_id(name)
-    embed.set_author(name="Go to page",
-                     url=f"https://anilist.co/manga/{mangaId}")
+    embed.set_author(name="Go to page", url=f"https://anilist.co/manga/{mangaId}")
 
     chapters = f"Chapters: {data['chapters']}"
     volumes = f"Volumes: {data['volumes']}"
-    releaseFormat = data['release_format'].capitalize()
+    releaseFormat = data["release_format"].capitalize()
     releaseFormat = f"Format: {releaseFormat}"
-    releaseStatus = data['release_status']
+    releaseStatus = data["release_status"]
     if releaseStatus == "NOT_YET_RELEASED":
         releaseStatus = "Unreleased"
     else:
@@ -53,10 +51,10 @@ async def parse_manga(data, ctx):
         if chapters == "Chapters: None":
             chapters = "Chapters: N/A"
 
-        match(chapters, volumes):
+        match (chapters, volumes):
             case (chapters, "Volumes: None"):
                 fields = [chapters, releaseFormat, releaseStatus]
-            case(chapters, volumes):
+            case (chapters, volumes):
                 fields = [chapters, volumes, releaseFormat, releaseStatus]
 
         if averageScore != "Score: None":
@@ -84,25 +82,24 @@ async def manga(ctx, *name):
 async def parse_anime(data, ctx):
     name = ctx.message.content.removeprefix(".anime ")
     data = anilist.get_anime(name)
-    desc = data['desc']
+    desc = data["desc"]
     embed = discord.Embed(
         colour=discord.Colour.dark_blue(),
-        title=data['name_romaji'],
-        description=data['name_english']
+        title=data["name_romaji"],
+        description=data["name_english"],
     )
-    embed.set_footer(text=data['genres'])
-    embed.set_thumbnail(url=data['cover_image'])
-    embed.set_image(url=data['banner_image'])
+    embed.set_footer(text=data["genres"])
+    embed.set_thumbnail(url=data["cover_image"])
+    embed.set_image(url=data["banner_image"])
     aniId = anilist.get_anime_id(name)
-    embed.set_author(name="Go to page",
-                     url=f"https://anilist.co/anime/{aniId}")
+    embed.set_author(name="Go to page", url=f"https://anilist.co/anime/{aniId}")
 
     episodes = f"Episodes: {data['airing_episodes']}"
 
-    season = data['season'] or "Unavailable"
+    season = data["season"] or "Unavailable"
     season = f"Season: {season.capitalize()}"
     airingFormat = f"Format: {data['airing_format']}"
-    airingStatus = data['airing_status']
+    airingStatus = data["airing_status"]
     if airingStatus == "NOT_YET_RELEASED":
         airingStatus = "Unreleased"
     else:
@@ -110,24 +107,43 @@ async def parse_anime(data, ctx):
 
     airingStatusPretty = f"Status: {airingStatus}"
     score = f"Score: {data['average_score']}"
-    startingTime = f"Start date: {data['starting_time']}"
-    endingTime = f"End date: {data['ending_time']}"
+    startingTime = f"Start date: {dt.datetime.strptime(data['starting_time'], '%m/%d/%Y').strftime('%B %d %Y')}"
+    endingTime = f"End date: {dt.datetime.strptime(data['ending_time'], '%m/%d/%Y').strftime('%B %d %Y')}"
 
     # fields = [episodes, relativeAiringDays, season, airingFormat, airingStatus, score, startingTime, endingTime]
     if airingStatus == "Unreleased":
         info = "Info unavailable"
     elif airingStatus == "Releasing":
-        nextAiring = data['next_airing_ep']['timeUntilAiring']
+        nextAiring = data["next_airing_ep"]["timeUntilAiring"]
         days = dt.timedelta(seconds=nextAiring).days
-        relativeAiringDays = f"Next episode in: {
-            str(days)} day" + "s" if days != 1 else ""
+        relativeAiringDays = (
+            f"Next episode in: {
+            str(days)} day"
+            + "s"
+            if days != 1
+            else ""
+        )
 
-        fields = [episodes, relativeAiringDays, season,
-                  airingFormat, airingStatusPretty, score, startingTime]
+        fields = [
+            episodes,
+            relativeAiringDays,
+            season,
+            airingFormat,
+            airingStatusPretty,
+            score,
+            startingTime,
+        ]
         info = pretty_list(fields)
     elif airingStatus == "Finished":
-        fields = [episodes, season, airingFormat,
-                  airingStatusPretty, score, startingTime, endingTime]
+        fields = [
+            episodes,
+            season,
+            airingFormat,
+            airingStatusPretty,
+            score,
+            startingTime,
+            endingTime,
+        ]
         info = pretty_list(fields)
 
     desc = ellipcise(markdownify(desc))
@@ -137,9 +153,7 @@ async def parse_anime(data, ctx):
     await ctx.send(embed=embed)
 
 
-@commands.command(
-    brief="Search Anilist for a manga and post its info in the chat"
-)
+@commands.command(brief="Search Anilist for a manga and post its info in the chat")
 async def anime(ctx, *name):
     name = ctx.message.content.removeprefix(".anime ")
     try:
