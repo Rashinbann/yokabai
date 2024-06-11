@@ -70,7 +70,6 @@ class ViewDesu(discord.ui.View):
             )
             embedfed.set_thumbnail(url=catstats.catimghappy)
         await interaction.response.edit_message(embed=embedfed, view=None)
-        self.foo = True
         self.stop()
 
     @discord.ui.button(label="Ignore", style=discord.ButtonStyle.red)
@@ -83,7 +82,6 @@ class ViewDesu(discord.ui.View):
             value="Type `.neko` again for a different cat... maybe this time you won't ignore it!",
         )
         await interaction.response.edit_message(embed=embedignored, view=None)
-        self.foo = False
         self.stop()
 
 
@@ -105,13 +103,6 @@ async def neko(ctx):
     message = await ctx.send(embed=embed, view=view)
     view.message = message
     await view.wait()
-
-    if view.foo is None:
-        print("Timeout")
-    elif view.foo is True:
-        print("Ok")
-    else:
-        print("Ignored")
 
 
 @commands.command()
