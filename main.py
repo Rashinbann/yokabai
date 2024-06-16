@@ -8,7 +8,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-activity = discord.Activity(name="yokabai", type=discord.ActivityType.competing)
+activity = discord.Activity(
+    name="yokabai", type=discord.ActivityType.competing)
 bot = commands.Bot(command_prefix=".", intents=intents, activity=activity)
 
 db = sqlite3.connect("streakdb.db")
@@ -21,7 +22,7 @@ async def on_ready():
     await bot.load_extension("streak")
     await bot.load_extension("anilist")
     await bot.load_extension("user")
-    await bot.load_extension("neko/neko.py")
+    await bot.load_extension("neko.neko")
 
 
 TOKEN = dotenv_values(".env").get("YOKABAI_TOKEN") or ""
